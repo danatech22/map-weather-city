@@ -17,11 +17,11 @@ const City = () => {
   const activePopup = useRef<Popup | null>(null); // Keep track of the active popup
 
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapboxToken) {
-      setError("Mapbox token is missing...");
+      // setError("Mapbox token is missing...");
       setIsLoading(false);
       return;
     }
@@ -59,9 +59,9 @@ const City = () => {
           city.title === selectedCity?.title ? "selected" : ""
         }`;
 
-        const marker = new mapboxgl.Marker(markerEl)
-          .setLngLat([city.lon, city.lat])
-          .addTo(map.current!);
+        // const marker = new mapboxgl.Marker(markerEl)
+        //   .setLngLat([city.lon, city.lat])
+        //   .addTo(map.current!);
 
         markerEl.addEventListener("click", async (e) => {
           e.stopPropagation();
