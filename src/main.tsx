@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import "./index.css";
 import Home from "./pages/Home";
-import City from "./pages/City";
+import City from "./pages/city/City";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
