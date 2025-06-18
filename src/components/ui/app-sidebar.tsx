@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, Link } from "react-router";
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { cities, type CityProps } from "@/data/cities";
+import { Home } from "lucide-react";
 
 export function AppSidebar() {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -44,16 +45,21 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
-        <div className="p-4 border-b border-gray-200">
-          <input
-            type="text"
-            placeholder="Search for a city..."
-            value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setSearchTerm(e.target.value)
-            }
-            className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md text-gray-900 transition-colors focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-          />
+        <div>
+          <Link className="pl-5 pt-5 block" to="/">
+            <Home />
+          </Link>
+          <div className="p-4 border-b border-gray-200">
+            <input
+              type="text"
+              placeholder="Search for a city..."
+              value={searchTerm}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSearchTerm(e.target.value)
+              }
+              className="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-300 rounded-md text-gray-900 transition-colors focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+            />
+          </div>
         </div>
         <SidebarGroup>
           <SidebarGroupLabel>CITIES</SidebarGroupLabel>

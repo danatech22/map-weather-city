@@ -59,9 +59,9 @@ const City = () => {
           city.title === selectedCity?.title ? "selected" : ""
         }`;
 
-        // const marker = new mapboxgl.Marker(markerEl)
-        //   .setLngLat([city.lon, city.lat])
-        //   .addTo(map.current!);
+        new mapboxgl.Marker(markerEl)
+          .setLngLat([city.lon, city.lat])
+          .addTo(map.current!);
 
         markerEl.addEventListener("click", async (e) => {
           e.stopPropagation();

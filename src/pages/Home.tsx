@@ -28,10 +28,8 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 transition-colors duration-300">
       <main className="container mx-auto flex min-h-screen flex-col items-center justify-center p-4">
-        {/* Main Profile Card */}
         <div className="w-full max-w-2xl rounded-2xl bg-white p-8 shadow-lg transition-shadow duration-300 hover:shadow-xl md:p-12">
           <div className="flex flex-col items-center text-center md:flex-row md:items-start md:text-left">
-            {/* Profile Image */}
             <div className="mb-6 md:mb-0 md:mr-8">
               <img
                 src={userProfile.avatarUrl}
@@ -39,7 +37,6 @@ export default function HomePage() {
                 className="h-32 w-32 rounded-full border-4 border-blue-200 object-cover shadow-md"
               />
             </div>
-
             <div className="flex-1">
               <h1 className="text-4xl font-bold text-gray-900">
                 {userProfile.name}
