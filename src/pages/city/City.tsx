@@ -1,30 +1,30 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
-import mapboxgl, { Map as MapboxMap } from "mapbox-gl";
+import mapboxgl, { Map as MapboxMap, Popup } from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./City.css";
 
 import Dashboard from "@/layout/Dashboard";
 import { cities, type CityProps } from "@/data/cities";
+import { fetchWeather, type Forecast } from "@/services/weatherService";
 
 const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const City = () => {
   const { cityName } = useParams<{ cityName?: string }>();
-
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<MapboxMap | null>(null);
+  const activePopup = useRef<Popup | null>(null); // Keep track of the active popup
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!mapboxToken) {
-      setError("Mapbox token is missing. Please add it to your .env file.");
+      setError("Mapbox token is missing...");
       setIsLoading(false);
       return;
     }
-
     if (map.current || !mapContainer.current) return;
 
     const selectedCity = cityName
@@ -50,37 +50,57 @@ const City = () => {
     map.current.addControl(new mapboxgl.NavigationControl(), "top-right");
 
     map.current.on("load", () => {
+      setIsLoading(false);
       console.log("Map loaded successfully.");
 
       cities.forEach((city: CityProps) => {
         const markerEl = document.createElement("div");
-
         markerEl.className = `custom-marker ${
           city.title === selectedCity?.title ? "selected" : ""
         }`;
 
-        const popup = new mapboxgl.Popup({
-          offset: 25,
-          closeButton: false,
-        }).setHTML(
-          `<h3>${city.title}</h3><p>Lat: ${city.lat.toFixed(
-            4
-          )}, Lon: ${city.lon.toFixed(4)}</p>`
-        );
-
-        new mapboxgl.Marker(markerEl)
+        const marker = new mapboxgl.Marker(markerEl)
           .setLngLat([city.lon, city.lat])
-          .setPopup(popup)
           .addTo(map.current!);
-      });
 
-      setIsLoading(false);
+        markerEl.addEventListener("click", async (e) => {
+          e.stopPropagation();
+
+          if (activePopup.current) {
+            activePopup.current.remove();
+          }
+
+          const popup = new Popup({ offset: 25, closeOnClick: true })
+            .setLngLat([city.lon, city.lat])
+            .setHTML(
+              '<div class="popup-loading"><h3>Loading weather...</h3></div>'
+            )
+            .addTo(map.current!);
+
+          activePopup.current = popup;
+
+          try {
+            const forecast = await fetchWeather(city.lat, city.lon);
+            if (activePopup.current === popup) {
+              popup.setHTML(createWeatherHtml(city.title, forecast));
+            }
+          } catch (err) {
+            console.error(err);
+            if (activePopup.current === popup) {
+              popup.setHTML(
+                '<div class="popup-error"><h3>Could not load weather.</h3></div>'
+              );
+            }
+          }
+        });
+      });
     });
 
-    map.current.on("error", (e) => {
-      console.error("Map error:", e);
-      setError(`Map failed to load: ${e.error?.message || "Unknown error"}`);
-      setIsLoading(false);
+    map.current.on("click", () => {
+      if (activePopup.current) {
+        activePopup.current.remove();
+        activePopup.current = null;
+      }
     });
 
     return () => {
@@ -91,24 +111,29 @@ const City = () => {
     };
   }, [cityName]);
 
-  if (error) {
-    return (
-      <Dashboard>
-        <div className="w-full h-full bg-red-50 flex items-center justify-center text-center p-4">
-          <div>
-            <h2 className="text-xl font-bold text-red-600 mb-2">Map Error</h2>
-            <p className="text-red-500 mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        </div>
-      </Dashboard>
-    );
-  }
+  const createWeatherHtml = (cityName: string, forecast: Forecast): string => `
+    <div class="weather-popup">
+      <h3 class="city-title">${cityName}</h3>
+      <div class="forecast-item current">
+        <span>Now</span>
+        <span class="icon">${forecast.current.icon}</span>
+        <span class="desc">${forecast.current.description}</span>
+        <span class="temp">${forecast.current.temp}°C</span>
+      </div>
+      <div class="forecast-item">
+        <span>Today</span>
+        <span class="icon">${forecast.today.icon}</span>
+        <span class="desc">${forecast.today.description}</span>
+        <span class="temp"><strong>${forecast.today.max}°</strong> / ${forecast.today.min}°</span>
+      </div>
+      <div class="forecast-item">
+        <span>Tomorrow</span>
+        <span class="icon">${forecast.tomorrow.icon}</span>
+        <span class="desc">${forecast.tomorrow.description}</span>
+        <span class="temp"><strong>${forecast.tomorrow.max}°</strong> / ${forecast.tomorrow.min}°</span>
+      </div>
+    </div>
+  `;
 
   return (
     <Dashboard>
